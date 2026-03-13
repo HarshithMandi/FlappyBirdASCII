@@ -1,0 +1,12 @@
+while True:
+    text = input()
+
+    if len(text) <8:
+        print("Invalid input")
+    else:
+        for i in text:
+            if i.isdigit():
+                print("Valid input")
+                break
+        else:
+            print("Invalid input")
