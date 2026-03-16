@@ -3,6 +3,7 @@ n=int(input("Enter the number of students: "))
 for i in range(n):
     a,b,c=input().split()
     db.append((a,b,c))    # input format is "ID Name Score"
+print(db)
 print("add a new student")
 a,b,c=input().split()
 db.append((a,b,c))
@@ -14,3 +15,4 @@ print("remove a student")
 id=input("Enter the ID of the student to remove: ")
 db = [student for student in db if student[0] != id]
 print("Student removed.")
+print(db)
