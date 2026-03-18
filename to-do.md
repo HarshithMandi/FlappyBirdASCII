@@ -1,0 +1,5 @@
+- OOPS tasks:
+    - Online Shopping Cart System
+    - Bank System
+- Pytest Framework
+- Exception Handling
