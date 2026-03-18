@@ -1,0 +1,13 @@
+{
+    "name":"Harshith",
+    "age":22
+    "active":true
+    "address":{
+        "city":"Chennai",
+        "Country":"India"
+        }
+}
+
+
+json.loads()
+json.dumps()
