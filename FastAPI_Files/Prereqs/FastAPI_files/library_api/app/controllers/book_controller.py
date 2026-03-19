@@ -1,7 +1,9 @@
-from app.repository.book_repository import BookRepository
-from app.services.book_service import BookService
+from fastapi import APIRouter, Depends
+from dependencies.book_dependencies import get_book_service
+from services.book_service import BookService
 
-repository=BookRepository()
+router = APIRouter()
 
-def get_book_service():
-    return BookService(repository)
+@router.get("/books")
+def get_books(book_service: BookService = Depends(get_book_service)):
+    return book_service.get_all_books() 
