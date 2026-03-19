@@ -1,5 +1,4 @@
-Change Summary for Job_Portal
-Date: 2026-03-19
+Changes made since last commit
 
 1) app/model/application.py
 - Imported ForeignKey from sqlalchemy: `from sqlalchemy import Column, Integer, String, ForeignKey`.
@@ -18,4 +17,55 @@ Date: 2026-03-19
 - Changed User construction from `User(**user)` to `User(**user.dict())`.
 - Added a new function:
   - get_users(db): returns `db.query(User).all()`.
+
+12) app/repositories/user_repository.py (follow-up)
+- Added safe transaction handling for POST /users:
+  - Wraps `db.commit()` in try/except and does `db.rollback()` on `sqlalchemy.exc.IntegrityError` (prevents broken session after a failed insert).
+- Added lookup helpers used by services:
+  - get_user_by_email(db, email)
+  - get_user_by_id(db, user_id)
+- Updated get_users to honor pagination inputs:
+  - get_users(db, skip=0, limit=100) uses `.offset(skip).limit(limit)`.
+
+13) app/services/user_service.py
+- POST /users now returns a clean error for duplicate emails:
+  - Pre-checks existing users by email and raises HTTP 409 (Conflict).
+  - Also converts a potential IntegrityError (race condition) into the same HTTP 409.
+- Implemented get_user_by_id_service for GET /users/{user_id}.
+- Updated get_users_service to accept and pass through `skip`/`limit`.
+
+14) app/controllers/user_controller.py
+- Wired GET /users query params (`skip`, `limit`) through to the service layer so they affect the DB query.
+
+4) app/schemas/user_schema.py
+- Updated UserResponse to include `name` and `email` (so responses match the User model fields).
+- Made ORM serialization compatible with both Pydantic v1 and v2:
+  - Pydantic v2: `model_config = ConfigDict(from_attributes=True)`
+  - Pydantic v1: `class Config: orm_mode = True`
+
+5) app/schemas/job_schema.py
+- Made ORM serialization compatible with both Pydantic v1 and v2 (same approach as above).
+
+6) app/schemas/application_schema.py
+- Added ApplicationResponse (id, user_id, job_id) so POST /applications can return a schema-validated response.
+- Made ORM serialization compatible with both Pydantic v1 and v2.
+
+7) app/repositories/job_repository.py
+- Replaced direct schema unpacking with version-safe conversion:
+  - Uses `model_dump()` when available (Pydantic v2) else falls back to `dict()` (Pydantic v1).
+- Also accepts plain `dict` inputs (passes through unchanged).
+
+8) app/repositories/user_repository.py
+- Updated schema conversion to prefer `model_dump()` (Pydantic v2) with a `dict()` fallback.
+- Also accepts plain `dict` inputs (passes through unchanged).
+
+9) app/repositories/application_repository.py
+- Fixed apply_for_job to convert the ApplicationCreate schema using `model_dump()`/`dict()` before creating the ORM model.
+- Also accepts plain `dict` inputs (passes through unchanged).
+
+10) app/services/*.py
+- Updated service function type hints to accept the correct request schemas (JobCreate, UserCreate, ApplicationCreate) instead of `dict`.
+
+11) app/controllers/application_controller.py
+- Added `response_model=ApplicationResponse` to POST /applications so responses are validated against the schema.
 
