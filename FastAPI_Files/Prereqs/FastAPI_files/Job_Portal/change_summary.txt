@@ -1,0 +1,21 @@
+Change Summary for Job_Portal
+Date: 2026-03-19
+
+1) app/model/application.py
+- Imported ForeignKey from sqlalchemy: `from sqlalchemy import Column, Integer, String, ForeignKey`.
+- Corrected foreign key column definitions:
+  - Changed user_id to: Column(Integer, ForeignKey("users.id"), nullable=False)
+  - Changed job_id to: Column(Integer, ForeignKey("jobs.id"), nullable=False)
+- These fixes ensure SQLAlchemy correctly recognizes and enforces the foreign key relationships to users and jobs.
+
+2) app/repositories/job_repository.py
+- Updated create_job signature from `create_job(db, job: dict)` to `create_job(db, job)` so it can accept a Pydantic JobCreate instance.
+- Changed Job construction from `Job(**job)` to `Job(**job.dict())`.
+- This prevents runtime errors when unpacking a Pydantic model directly and correctly maps the schema fields into the ORM model.
+
+3) app/repositories/user_repository.py
+- Updated create_user signature from `create_user(db, user: dict)` to `create_user(db, user)` so it can accept a Pydantic UserCreate instance.
+- Changed User construction from `User(**user)` to `User(**user.dict())`.
+- Added a new function:
+  - get_users(db): returns `db.query(User).all()`.
+
