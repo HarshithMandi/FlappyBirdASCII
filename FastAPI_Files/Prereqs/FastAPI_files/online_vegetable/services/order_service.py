@@ -7,9 +7,12 @@ class OrderService:
     def __init__(self, order_repository: OrderRepository):
         self.order_repository = order_repository
 
-    def create_order(self, order_data: OrderCreate) -> Order:
+    async def create_order(self, order_data: OrderCreate) -> str:
         order = Order(**order_data.dict(), status="pending")
-        return self.order_repository.create(order)
+        return await self.order_repository.create(order)
 
-    def get_order(self, id: str) -> Order:
-        return self.order_repository.get_by_id(id)
+    async def get_order(self, id: str) -> Order:
+        return await self.order_repository.get_by_id(id)
+
+    async def get_order_by_id(self, order_id: str) -> Order:
+        return await self.get_order(order_id)

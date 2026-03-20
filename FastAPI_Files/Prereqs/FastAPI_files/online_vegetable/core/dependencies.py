@@ -7,15 +7,15 @@ from services.order_service import OrderService
 from core.database import Database
 
 def get_user_repository() -> UserRepository:
-    db = Database().get_db()
+    db = Database.get_db()
     return UserRepository(db["users"])
 
 def get_product_repository() -> ProductRepository:
-    db = Database().get_db()
+    db = Database.get_db()
     return ProductRepository(db["products"])
 
 def get_order_repository() -> OrderRepository:
-    db = Database().get_db()
+    db = Database.get_db()
     return OrderRepository(db["orders"])
 
 def get_user_service() -> UserService:

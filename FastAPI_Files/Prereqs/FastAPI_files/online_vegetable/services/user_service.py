@@ -9,7 +9,7 @@ class UserService:
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
 
-    def create_user(self, user_data: UserCreate) -> User:
+    async def create_user(self, user_data: UserCreate) -> str:
         hashed_password = pwd_context.hash(user_data.password)
         user = User(
             username=user_data.username,
@@ -17,7 +17,7 @@ class UserService:
             hashed_password=hashed_password,
             role="user"
         )
-        return self.user_repository.create(user)
+        return await self.user_repository.create(user)
 
-    def get_user_by_email(self, email: str) -> User:
-        return self.user_repository.get_by_email(email)
+    async def get_user_by_email(self, email: str) -> User:
+        return await self.user_repository.get_by_email(email)

@@ -1,0 +1,112 @@
+Online_Vegetable – Required Fixes Applied (March 20, 2026)
+
+Goal
+- Make the application import and run successfully without changing the public API route paths or core feature set (auth token, users, products, orders).
+
+Key Issues Found
+1) App could not start/import
+- middleware/cors.py was empty, but main.py imported add_cors -> ImportError.
+- EmailStr in schemas/user_schema.py requires the optional email-validator package -> ImportError.
+- OAuth2PasswordRequestForm requires python-multipart at import/route-registration time -> RuntimeError.
+
+2) MongoDB layer was internally inconsistent
+- core/database.py uses Motor (async), but repositories were written as synchronous PyMongo repositories.
+- Repositories used Mongo _id incorrectly (querying with string instead of ObjectId) and tried to pass raw Mongo documents (with _id) directly into Pydantic models.
+
+3) Domain models contained syntax/typing mistakes
+- models/order.py had `product_ids=List[str]` (not a field annotation), which breaks Pydantic model construction.
+- models/*.py had incorrect imports (`from pydantic import BaseModel, typing`).
+
+4) Controller/service method mismatches and async/sync mismatch
+- controllers/product_controller.py called `get_product_by_id()` but ProductService only had `get_product()`.
+- controllers/order_controller.py called `get_order_by_id()` but OrderService only had `get_order()`.
+- controllers/auth_controller.py awaited `service.get_user_by_email()` even though it was synchronous.
+
+Changes Made (by file)
+
+A) App wiring / startup
+- main.py
+  - Fixed router inclusion: removed duplicated prefixes passed to include_router.
+    Routers already define prefixes (/users, /products, /orders, /auth). This restores the intended route paths.
+  - Added shutdown hook to close the Mongo client (Database.disconnect()).
+
+B) Middleware
+- middleware/cors.py
+  - Implemented add_cors(app) using FastAPI’s CORSMiddleware so main.py can import and apply it.
+
+C) MongoDB / repositories (Motor async)
+- core/database.py
+  - Removed unused imports and added Database.disconnect().
+
+- repositories/user_repository.py
+  - Fixed incorrect model usage (was using Product instead of User).
+  - Converted to async Motor calls (await find_one / insert_one).
+  - Added Mongo document -> Pydantic model mapping: _id -> id (string).
+
+- repositories/product_repository.py
+  - Converted to async Motor calls.
+  - Correctly queries by ObjectId.
+  - Added _id -> id mapping.
+
+- repositories/order_repository.py
+  - Converted to async Motor calls.
+  - Correctly queries by ObjectId.
+  - Added _id -> id mapping.
+
+D) Services (async + compatibility method names)
+- services/user_service.py
+  - Converted create/get operations to async to match Motor repositories.
+
+- services/product_service.py
+  - Converted create/get operations to async.
+  - Added get_product_by_id(product_id) wrapper to match controller usage.
+
+- services/order_service.py
+  - Converted create/get operations to async.
+  - Added get_order_by_id(order_id) wrapper to match controller usage.
+
+E) Models
+- models/user.py, models/product.py
+  - Cleaned invalid imports; kept the same fields.
+
+- models/order.py
+  - Fixed product_ids field definition to `product_ids: List[str]`.
+
+F) Auth
+- core/auth.py
+  - Updated OAuth2PasswordBearer tokenUrl to /auth/token (matches the existing auth route).
+  - Converted get_current_user to async (awaits repository lookup).
+
+G) Controllers (await async services)
+- controllers/user_controller.py
+  - Converted handlers to async and awaited UserService.
+
+- controllers/product_controller.py
+  - Converted handlers to async and awaited ProductService.
+  - Added 404 response when product is not found (prevents response_model validation crashes).
+
+- controllers/order_controller.py
+  - Converted handlers to async and awaited OrderService.
+  - Added 404 response when order is not found (prevents response_model validation crashes).
+
+Dependency / Environment Changes
+- requirements.txt
+  - Added: email-validator (required by Pydantic EmailStr).
+  - python-multipart was already listed, but it must be installed in the runtime environment for OAuth2PasswordRequestForm.
+
+How to Run
+1) Install dependencies:
+   pip install -r requirements.txt
+2) Ensure MongoDB is running and accessible at settings.MONGODB_URI (default mongodb://localhost:27017).
+3) Start the API:
+   uvicorn main:app --reload
+
+Routes Confirmed (unchanged paths)
+- /auth/token
+- /users/
+- /users/me
+- /users/admin
+- /products/
+- /products/{product_id}
+- /orders/
+- /orders/{order_id}

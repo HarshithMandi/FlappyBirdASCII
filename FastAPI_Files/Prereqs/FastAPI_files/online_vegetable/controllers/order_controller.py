@@ -8,13 +8,16 @@ from core.auth import get_current_user
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 @router.post("/", response_model=OrderOut)
-def create_order(order: OrderCreate, service: OrderService = Depends(get_order_service), current_user = Depends(get_current_user)):
-    order_id = service.create_order(order)
+async def create_order(order: OrderCreate, service: OrderService = Depends(get_order_service), current_user = Depends(get_current_user)):
+    order_id = await service.create_order(order)
     return {"id": order_id, **order.dict(), "status": "pending"}
 
 @router.get("/{order_id}", response_model=OrderOut)
-def get_order(order_id: str, service: OrderService = Depends(get_order_service)):
-    return service.get_order_by_id(order_id)
+async def get_order(order_id: str, service: OrderService = Depends(get_order_service)):
+    order = await service.get_order_by_id(order_id)
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return order
 
-s
+
     

@@ -1,16 +1,34 @@
 from models.product import Product
 from typing import Optional
-from pymongo.collection import Collection
+
+from bson import ObjectId
+from motor.motor_asyncio import AsyncIOMotorCollection
 
 
 class ProductRepository:
-    def __init__(self, collection: Collection):
+    def __init__(self, collection: AsyncIOMotorCollection):
         self.collection = collection
 
-    def get_by_id(self, id: str) -> Optional[Product]:
-        data = self.collection.find_one({"_id": id})
-        return Product(**data) if data else None
+    async def get_by_id(self, id: str) -> Optional[Product]:
+        try:
+            oid = ObjectId(id)
+        except Exception:
+            return None
 
-    def create(self, product: Product) -> Product:
-        result = self.collection.insert_one(product.dict())
+        data = await self.collection.find_one({"_id": oid})
+        return self._to_model(data)
+
+    async def create(self, product: Product) -> str:
+        payload = product.dict(exclude_none=True)
+        payload.pop("id", None)
+        result = await self.collection.insert_one(payload)
         return str(result.inserted_id)
+
+    @staticmethod
+    def _to_model(data: Optional[dict]) -> Optional[Product]:
+        if not data:
+            return None
+        if "_id" in data:
+            data = {**data, "id": str(data["_id"])}
+            data.pop("_id", None)
+        return Product(**data)
