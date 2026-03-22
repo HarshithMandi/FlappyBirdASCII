@@ -1,0 +1,6 @@
+User: Alice | Items: Laptop x1, Mouse x2 | Total: 1050.00
+User: Bob | Items: Keyboard x1 | Total: 45.00
+User: Charlie | Items: Mouse x3, Keyboard x2 | Total: 165.00
+User: Diana | Items: Laptop x1 | Total: 900.00
+
+User: Harshith | Items: Laptop x1 | Total: 900.00

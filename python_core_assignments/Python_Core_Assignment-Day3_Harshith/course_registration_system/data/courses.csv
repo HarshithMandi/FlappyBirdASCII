@@ -1,0 +1,4 @@
+course_id,course_name,instructor,seats_available
+C101,Python Programming,Dr.Kumar,2
+C102,Data Science Fundamentals,Dr.Smith,0
+302,Data Structures and Algorithms,Abdul Bari,100000
