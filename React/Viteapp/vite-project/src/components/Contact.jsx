@@ -1,10 +1,11 @@
-const Contact = () => {
+export default function Contact() {
     return (
-        <div>
-            <h1>Contact Us</h1>
-            <p>This is the Contact page.</p>
-        </div>
-    );
-};
-
-export default Contact;
+        <section className="card">
+            <h2 className="cardTitle">Contact</h2>
+            <p className="muted">For questions or support, contact us at:</p>
+            <p>
+                <strong>Email:</strong> support@example.com
+            </p>
+        </section>
+    )
+}

@@ -1,0 +1,25 @@
+{
+  "students": [
+    {
+      "id": "b5b7b7f5-1a6b-4e2b-9b2a-9a0a0b8f1f11",
+      "name": "Asha Kumar",
+      "rollNumber": "23CS102",
+      "department": "Engineering",
+      "email": "asha@example.com"
+    },
+    {
+      "id": "c4e9f9a1-6c75-4a38-9d24-2a1d5a6c9d02",
+      "name": "Rahul Verma",
+      "rollNumber": "23HR014",
+      "department": "HR",
+      "email": "rahul@example.com"
+    },
+    {
+      "name": "Harshith",
+      "rollNumber": "1234",
+      "department": "Engineering",
+      "email": "test@example.com",
+      "id": "PP__SAn"
+    }
+  ]
+}
