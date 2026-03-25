@@ -1,0 +1,27 @@
+from sqlalchemy.orm import Session
+
+from app.models.user import User
+
+
+class UserRepository:
+    def create(self, db: Session, user: User) -> User:
+        db.add(user)
+        db.flush()
+        return user
+
+    def get(self, db: Session, user_id: int) -> User | None:
+        return db.query(User).filter(User.id == user_id).first()
+
+    def get_by_email(self, db: Session, email: str) -> User | None:
+        return db.query(User).filter(User.email == email).first()
+
+    def list(self, db: Session, skip: int, limit: int) -> list[User]:
+        return db.query(User).offset(skip).limit(limit).all()
+
+    def update(self, db: Session, user: User) -> User:
+        db.add(user)
+        db.flush()
+        return user
+
+    def delete(self, db: Session, user: User) -> None:
+        db.delete(user)
