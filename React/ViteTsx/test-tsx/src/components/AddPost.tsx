@@ -1,82 +1,87 @@
-import { useState } from 'react'
-import type { FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 
-export type NewPost = {
+type Product = {
+	id: number
 	title: string
-	body: string
-	tags: string
+	price: number
+	category: string
+	description: string
+	image: string
 }
 
-type AddPostProps = {
-	onAdd: (post: NewPost) => void
-	isSubmitting?: boolean
-}
-
-const AddPost = ({ onAdd, isSubmitting = false }: AddPostProps) => {
-	const [title, setTitle] = useState('')
-	const [body, setBody] = useState('')
-	const [tags, setTags] = useState('')
+const AddPost = () => {
+	const [products, setProducts] = useState<Product[]>([])
+	const [isLoading, setIsLoading] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
-	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault()
-		const trimmedTitle = title.trim()
-		const trimmedBody = body.trim()
+	useEffect(() => {
+		let isMounted = true
 
-		if (!trimmedTitle || !trimmedBody) {
-			setError('Title and body are required.')
-			return
+		const loadProducts = async () => {
+			try {
+				const response = await fetch('https://fakestoreapi.com/products')
+				if (!response.ok) {
+					throw new Error('Unable to load products.')
+				}
+				const data = (await response.json()) as Product[]
+				if (isMounted) {
+					setProducts(data)
+					setError(null)
+				}
+			} catch (fetchError) {
+				if (isMounted) {
+					setError(
+						fetchError instanceof Error
+							? fetchError.message
+							: 'Unable to load products.',
+					)
+				}
+			} finally {
+				if (isMounted) {
+					setIsLoading(false)
+				}
+			}
 		}
 
-		setError(null)
-		onAdd({ title: trimmedTitle, body: trimmedBody, tags })
-		setTitle('')
-		setBody('')
-		setTags('')
-	}
+		loadProducts()
+
+		return () => {
+			isMounted = false
+		}
+	}, [])
 
 	return (
-		<section className="add-post">
-			<h3>Create a new post</h3>
-			<form onSubmit={handleSubmit} aria-describedby="post-error">
-				<label>
-					Title
-					<input
-						type="text"
-						value={title}
-						onChange={(event) => setTitle(event.target.value)}
-						placeholder="What's on your mind?"
-						required
-					/>
-				</label>
-				<label>
-					Body
-					<textarea
-						value={body}
-						onChange={(event) => setBody(event.target.value)}
-						placeholder="Share your update with the team"
-						rows={4}
-						required
-					/>
-				</label>
-				<label>
-					Tags (comma separated)
-					<input
-						type="text"
-						value={tags}
-						onChange={(event) => setTags(event.target.value)}
-						placeholder="product, launch, update"
-					/>
-				</label>
-				{error ? (
-					<p id="post-error" role="alert">
-						{error}
-					</p>
-				) : null}
-				<button type="submit" disabled={isSubmitting}>
-					{isSubmitting ? 'Publishing...' : 'Publish post'}
-				</button>
-			</form>
+		<section className="product-panel">
+			<h3>Product listings</h3>
+			<p>Available after login.</p>
+			{isLoading ? <p>Loading products...</p> : null}
+			{error ? (
+				<p role="alert">{error}</p>
+			) : null}
+			{!isLoading && !error ? (
+				<ul className="product-list">
+					{products.map((product) => (
+							<li key={product.id} className="product-card">
+								<div className="product-header">
+								<div>
+									<h4>{product.title}</h4>
+										<p className="product-meta">
+										{product.category} · ${product.price.toFixed(2)}
+									</p>
+								</div>
+								<img
+									src={product.image}
+									alt={product.title}
+									width={64}
+									height={64}
+									loading="lazy"
+								/>
+							</div>
+							<p className="product-body">{product.description}</p>
+						</li>
+					))}
+				</ul>
+			) : null}
 		</section>
 	)
 }

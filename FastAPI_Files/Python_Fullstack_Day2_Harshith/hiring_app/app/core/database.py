@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from app.core.config import settings
 from app.models.base import Base
 
-_connect_args = {}
+_connect_args: dict = {}
 if settings.database_url.startswith("sqlite"):
     _connect_args = {"check_same_thread": False}
 
